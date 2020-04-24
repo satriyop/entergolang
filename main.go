@@ -3,64 +3,55 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os/exec"
-	"strings"
 )
 
-func main() {
-	fmt.Println("Running PHP Code")
-
-	filename := "test.php"
-	codeSnippet := readFile(filename)
-	runPHP(codeSnippet)
-
+var codeSnippet struct {
+	id   string
+	code string
 }
 
-func runPHP(f string) {
-	checkPhpExists()
+func main() {
+	fmt.Println("Running Code in Docker")
 
-	cmd := exec.Command("php")
-	cmd.Stdin = strings.NewReader(f)
+	startServer()
+	// runDockerPhp()
+}
+
+func runDockerPhp() string {
+	var res string
+	isExist, err := checkDockerExists()
+	check(err)
+	if isExist {
+		res = startDocker()
+	}
+	return res
+}
+
+func startDocker() string {
+	fmt.Println("going to run code in docker, please wait...")
+
+	cmd := exec.Command("bash", "-c", "docker run -w /app --rm --volumes-from phpcontainer php:7.4-alpine php test.php")
 
 	var out bytes.Buffer
 	cmd.Stdout = &out
 	err := cmd.Run()
 	check(err)
-	fmt.Println(out.String())
+	r := out.String()
 
+	return r
 }
 
-func runDockerPhp(f string) {
-	checkDockerExists()
-
-}
-
-func checkPhpExists() {
-	path, err := exec.LookPath("php")
-	if err != nil {
-		fmt.Printf("didn't find 'php' executable\n")
-	} else {
-		fmt.Printf("'php' executable is in '%s'\n", path)
-	}
-}
-
-func checkDockerExists() {
+func checkDockerExists() (bool, error) {
 	path, err := exec.LookPath("docker")
 	if err != nil {
 		fmt.Printf("didn't find 'docker' executable\n")
+		return false, err
 	} else {
 		fmt.Printf("'docker' executable is in '%s'\n", path)
+		return true, nil
 	}
-}
-
-func readFile(f string) string {
-	content, err := ioutil.ReadFile(f)
-	check(err)
-
-	t := string(content)
-	return t
 }
 
 func check(e error) {

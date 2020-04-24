@@ -1,0 +1,14 @@
+// create container and mount the host dir 
+docker create -v /Users/satriyo/dev/golang/entergolang/code:/app --name phpcontainer php:7.4-alpine 
+
+// execute code  
+docker run -w /app --rm --volumes-from phpcontainer php:7.4-alpine php test.php
+
+
+
+// return the container id
+docker run --cidfile docker.cid php:7.4-alpine 
+
+// test 
+// anonymous container and run php code and remove container immediately
+echo "<?php echo 'asdf';" | docker run -i --rm php:7.4-alpine php
