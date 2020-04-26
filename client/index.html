@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="./codemirror.css">
+    <link rel="stylesheet" href="./style.css">
+
+    <script src="./node_modules/codemirror/lib/codemirror.js"></script>
+    <script src="./node_modules/codemirror/mode/php/php.js"></script>
+    <script src="./node_modules/codemirror/mode/htmlmixed/htmlmixed.js"></script>
+    <script src="./node_modules/codemirror/mode/xml/xml.js"></script>
+    <script src="./node_modules/codemirror/mode/javascript/javascript.js"></script>
+    <script src="./node_modules/codemirror/mode/clike/clike.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>entergolang</title>
+</head>
+<body>
+    <h3>Code Playground</h3>
+    <div class="flex-container">
+        <div>
+            <textarea id="code" name="code"></textarea>
+        </div>
+        <div>
+            <button id="run">run</button>
+        </div>
+    </div>
+  
+    <script>
+        var myTextArea = document.getElementById("code")
+        var editor = CodeMirror.fromTextArea(myTextArea, {
+            lineNumbers: true,
+            mode: "php",
+            indentUnit: 4,
+            indentWithTabs: true
+        });
+        editor.setSize("600px", null)
+    </script>
+
+    <script>
+        const url = "http://localhost:3000/exec";
+        const btn = document.getElementById("run");
+        const snippet = editor.getValue();
+        btn.onclick = function() {
+            console.log(editor.getValue())
+            const snippet = editor.getValue();
+            fetch(url, {
+                method: 'post',
+                body: JSON.stringify({
+                    Code: snippet
+                }),
+            })
+                .then(r => {
+                    console.log(r)
+                    return r.json()
+                })
+                .then(data => console.log(data))
+        }
+    </script>
+</body>
+</html>

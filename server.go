@@ -1,54 +1,78 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 )
 
-
 type codeHandler struct {
 	snippet string
 }
+
+type codeSnippet struct {
+	Code string
+}
+type codeRun struct {
+	Result string `json:"result"`
+}
+
 var path = "/Users/satriyo/dev/golang/entergolang/code/test.php"
 
 func startServer() {
 	mux := http.NewServeMux()
 	ch := &codeHandler{}
+
 	mux.Handle("/exec", ch)
+
+	// mux.HandleFunc("/cookie", createCookie)
+
+	// mux.HandleFunc("/session", createSession)
+
+	// mux.HandleFunc("/tes", tesSession)
+
 	log.Println("Listening....")
 	http.ListenAndServe(":3000", mux)
 }
 
-
-
 func (ch *codeHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	// start session
+
 	// TODO : check lang ID
 
 	// TODO : get code snippet from client
-	ch.snippet = `<?php echo "test for php succeed";`
-	// ch.snippet = "tes"
+	var cs codeSnippet
+	body, err := ioutil.ReadAll(r.Body)
+	check(err)
+
+	err = json.Unmarshal(body, &cs)
+	check(err)
+	fmt.Println(cs)
 
 	// TODO : save to file (and how to identify unique user to file map)
-	createFile(ch.snippet)
+	createFile(cs.Code)
 
 	// trigger docker start
-	resp := runDockerPhp()
-	fmt.Println(resp)
+	out := runDockerPhp()
+	fmt.Println(out)
 
-	// send response body
-	w.Write([]byte(resp))
+	// prepare response body as json
+	var resp = &codeRun{
+		Result: out,
+	}
+	jsonData, _ := json.Marshal(resp)
+
+	// enable cors
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	// send json to client
+	w.Write([]byte(jsonData))
 }
 
 func createFile(cs string) {
 	_, err := os.Stat(path)
-
-	// if os.IsNotExist(err) {
-	// 	file, err := os.Create(path)
-	// 	check(err)
-	// 	defer file.Close()
-	// }
 
 	file, err := os.Create(path)
 	check(err)

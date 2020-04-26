@@ -7,17 +7,16 @@ import (
 	"os/exec"
 )
 
-var codeSnippet struct {
-	id   string
-	code string
-}
-
 func main() {
-	fmt.Println("Running Code in Docker")
+	fmt.Println("Session preparation")
 
+	fmt.Println("Running Code in Docker")
 	startServer()
 	// runDockerPhp()
 }
+
+// Session
+// var globalSessions *Manager
 
 func runDockerPhp() string {
 	var res string
