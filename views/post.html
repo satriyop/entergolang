@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://unpkg.com/terminal.css@0.7.1/dist/terminal.min.css" />
+    <title>{{ .Title }}</title>
+</head>
+<body class="terminal">
+    <div class="container">
+        <div class="terminal-nav">
+            <header class="terminal-logo">
+                <div class="logo terminal-prompt">
+                    <a href="/">enterGolang
+                    </a>
+                </div>
+            </header>
+            <nav class="terminal-menu">
+                <ul>
+                    <li class="menu-item">Home</li>
+                    <li class="menu-item">About</li>
+                    <li class="menu-item">Github</li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+
+    <div class="container">
+        <section>
+            <h2>EnterGolang Posts</h2>
+            <div>
+                <h2>{{ .Title }} {{ .Date }}</h2>
+                <p>{{ .Body }}</p>
+            </div>
+            <a href="/">Home</a>
+        </section>
+    </div>
+</body>
+</html>
