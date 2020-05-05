@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"path"
 	"path/filepath"
 	"strings"
 	"text/template"
@@ -44,14 +45,16 @@ func routeHandler(w http.ResponseWriter, r *http.Request) {
 	case "/":
 		posts := getPosts()
 
-		viewsPath, err := filepath.Abs("./views/index.html")
+		viewsPath, err := filepath.Abs("views")
 		if err != nil {
 			log.Fatal(err)
 		}
 
+		indexPath := path.Join(viewsPath, "index.html")
+
 		t := template.New("index.html")
 
-		t = template.Must(t.ParseFiles(viewsPath))
+		t = template.Must(t.ParseFiles(indexPath))
 
 		t.Execute(w, posts)
 
@@ -59,13 +62,17 @@ func routeHandler(w http.ResponseWriter, r *http.Request) {
 		p := r.URL.Path[1:]
 
 		post := getPost(p)
-		viewsPath, err := filepath.Abs("./views/post.html")
+
+		viewsPath, err := filepath.Abs("views")
 		if err != nil {
 			log.Fatal(err)
 		}
+
+		postPath := path.Join(viewsPath, "post.html")
+
 		t := template.New("post.html")
 
-		t = template.Must(t.ParseFiles(viewsPath))
+		t = template.Must(t.ParseFiles(postPath))
 
 		t.Execute(w, post)
 	}
