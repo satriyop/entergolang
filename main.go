@@ -83,7 +83,7 @@ func getPosts() []Post {
 		// get the filename without dir and ext .md
 		file := strings.Replace(f, "posts/", "", -1)
 		file = strings.Replace(file, ".md", "", -1)
-		fmt.Println(f)
+
 		content, fm := parseContent(f)
 		body := string(blackfriday.MarkdownCommon([]byte(content)))
 
