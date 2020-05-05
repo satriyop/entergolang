@@ -3,8 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="data:;base64,=">
     <link rel="stylesheet" href="https://unpkg.com/terminal.css@0.7.1/dist/terminal.min.css" />
-    <title>{{ .Title }}</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.13.1/highlight.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+    <title>{{ .FrontMatter.Title }}</title>
 </head>
 <body class="terminal">
     <div class="container">
@@ -27,12 +31,13 @@
 
     <div class="container">
         <section>
-            <h2>{{ .Date }}</h2>
+            <h2>{{ .FrontMatter.Title }}</h2>
             <div class="terminal-timeline">
-                <div class="terminal-card">
-                    <h2>{{ .Title }} {{ .Date }}</h2>
-                    <p>{{ .Body }}</p>
-                </div>
+                <!-- <div class="terminal-card">                     -->
+                    <div>
+                        {{ .Body }}
+                    </div>
+                <!-- </div> -->
             </div>
         </section>
     </div>

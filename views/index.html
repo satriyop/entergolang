@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="data:;base64,=">
     <link rel="stylesheet" href="https://unpkg.com/terminal.css@0.7.1/dist/terminal.min.css" />
     <link rel="stylesheet" href="/static/styles.css" />
     <title>EnterGolang</title>
@@ -33,8 +34,8 @@
             <div class="terminal-timeline">
             {{ range . }}
                 <div class="terminal-card">
-                    <h1>{{ .Title }}</h1>
-                    <div><p>{{ .Summary }} ...</p></div>
+                    <h1>{{ .FrontMatter.Title }}</h1>
+                    <div><p>{{ .FrontMatter.Date }} ...</p></div>
                     <div class="flex-card">
                         <a class="btn btn-default btn-ghost" href="{{ .File }}">More</a>
                     </div>
@@ -43,5 +44,6 @@
             </div>
         </section>
     </div>
+    
 </body>
 </html>

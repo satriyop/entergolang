@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"path"
@@ -15,11 +14,18 @@ import (
 
 // Post is representation of indivial post in dir posts
 type Post struct {
-	Title   string
-	Date    string
-	Summary string
-	Body    string
-	File    string
+	FrontMatter
+	Body string
+	File string
+}
+
+// FrontMatter is representation of meta data of post
+type FrontMatter struct {
+	Title      string
+	Date       string
+	Draft      bool
+	Tags       []string
+	Categories []string
 }
 
 func main() {
@@ -63,24 +69,21 @@ func routeHandler(w http.ResponseWriter, r *http.Request) {
 
 func getPosts() []Post {
 	posts := []Post{}
-	files, _ := filepath.Glob("posts/*.md")
+
+	files, err := filepath.Glob("posts/*.md")
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	for _, f := range files {
 		// get the filename without dir and ext .md
 		file := strings.Replace(f, "posts/", "", -1)
 		file = strings.Replace(file, ".md", "", -1)
+		fmt.Println(f)
+		content, fm := parseContent(f)
+		body := string(blackfriday.MarkdownCommon([]byte(content)))
 
-		// read
-		fileread, _ := ioutil.ReadFile(f)
-
-		// break per line
-		lines := strings.Split(string(fileread), "\n")
-		title := string(lines[0])
-		date := string(lines[1])
-		summary := string(lines[2])
-		body := strings.Join(lines[3:], "\n")
-		body = string(blackfriday.MarkdownCommon([]byte(body)))
-		posts = append(posts, Post{title, date, summary, body, file})
+		posts = append(posts, Post{*fm, body, file})
 	}
 
 	return posts
@@ -89,14 +92,19 @@ func getPosts() []Post {
 func getPost(p string) Post {
 	post := Post{}
 	f := "posts/" + p + ".md"
-	fileread, _ := ioutil.ReadFile(f)
-	lines := strings.Split(string(fileread), "\n")
-	title := string(lines[0])
-	date := string(lines[1])
-	summary := string(lines[2])
-	body := strings.Join(lines[3:], "\n")
-	body = string(blackfriday.MarkdownCommon([]byte(body)))
-	post = Post{title, date, summary, body, p}
+	// fileread, _ := ioutil.ReadFile(f)
+	// lines := strings.Split(string(fileread), "\n")
+	// title := string(lines[0])
+	// date := string(lines[1])
+	// summary := string(lines[2])
+	// body := strings.Join(lines[3:], "\n")
+	// body = string(blackfriday.MarkdownCommon([]byte(body)))
+	// post = Post{title, date, summary, body, p}
+
+	content, fm := parseContent(f)
+	body := string(blackfriday.MarkdownCommon([]byte(content)))
+
+	post = Post{*fm, body, p}
 
 	return post
 }
