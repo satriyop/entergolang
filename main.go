@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"path"
 	"path/filepath"
 	"strings"
 	"text/template"
@@ -30,6 +29,7 @@ type FrontMatter struct {
 
 func main() {
 	fmt.Println("Entergolang Start")
+
 	http.Handle("/static/",
 		http.StripPrefix("/static/",
 			http.FileServer(http.Dir("assets"))))
@@ -44,7 +44,10 @@ func routeHandler(w http.ResponseWriter, r *http.Request) {
 	case "/":
 		posts := getPosts()
 
-		viewsPath := path.Join("views", "index.html")
+		viewsPath, err := filepath.Abs("./views/index.html")
+		if err != nil {
+			log.Fatal(err)
+		}
 
 		t := template.New("index.html")
 
@@ -56,9 +59,10 @@ func routeHandler(w http.ResponseWriter, r *http.Request) {
 		p := r.URL.Path[1:]
 
 		post := getPost(p)
-
-		viewsPath := path.Join("views", "post.html")
-
+		viewsPath, err := filepath.Abs("./views/post.html")
+		if err != nil {
+			log.Fatal(err)
+		}
 		t := template.New("post.html")
 
 		t = template.Must(t.ParseFiles(viewsPath))
@@ -92,14 +96,6 @@ func getPosts() []Post {
 func getPost(p string) Post {
 	post := Post{}
 	f := "posts/" + p + ".md"
-	// fileread, _ := ioutil.ReadFile(f)
-	// lines := strings.Split(string(fileread), "\n")
-	// title := string(lines[0])
-	// date := string(lines[1])
-	// summary := string(lines[2])
-	// body := strings.Join(lines[3:], "\n")
-	// body = string(blackfriday.MarkdownCommon([]byte(body)))
-	// post = Post{title, date, summary, body, p}
 
 	content, fm := parseContent(f)
 	body := string(blackfriday.MarkdownCommon([]byte(content)))
