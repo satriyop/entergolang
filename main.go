@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"path"
@@ -30,84 +31,113 @@ type FrontMatter struct {
 
 func main() {
 	fmt.Println("Entergolang Start")
-
 	http.Handle("/static/",
 		http.StripPrefix("/static/",
 			http.FileServer(http.Dir("assets"))))
 
 	http.HandleFunc("/", routeHandler)
-
+	// TO DO better server config
 	log.Fatal(http.ListenAndServe(":9900", nil))
 }
 
 func routeHandler(w http.ResponseWriter, r *http.Request) {
-	switch r.URL.Path {
+	// that r.URL.Path[1:] is a file at directory posts ?
+	url := r.URL.Path
+
+	viewsPath, err := filepath.Abs("views")
+	printErr(err)
+
+	switch url {
 	case "/":
 		posts := getPosts()
-
-		viewsPath, err := filepath.Abs("views")
-		if err != nil {
-			log.Fatal(err)
-		}
 
 		indexPath := path.Join(viewsPath, "index.html")
 
 		t := template.New("index.html")
-
 		t = template.Must(t.ParseFiles(indexPath))
-
 		t.Execute(w, posts)
 
-	default:
-		p := r.URL.Path[1:]
-
-		post := getPost(p)
-
-		viewsPath, err := filepath.Abs("views")
-		if err != nil {
-			log.Fatal(err)
-		}
+	case url:
+		// TODO better matching with existing MD file
 
 		postPath := path.Join(viewsPath, "post.html")
 
+		post, err := getPost(url[1:])
+		// Render Error Page if Not Found
+		if err != nil {
+			errorPath := path.Join(viewsPath, "error.html")
+			t := template.New("error.html")
+			t = template.Must(t.ParseFiles(errorPath))
+			t.Execute(w, "")
+		}
+
+		// Render Post Page
 		t := template.New("post.html")
-
 		t = template.Must(t.ParseFiles(postPath))
-
 		t.Execute(w, post)
+
+	default:
+		errorPath := path.Join(viewsPath, "error.html")
+		t := template.New("error.html")
+		t = template.Must(t.ParseFiles(errorPath))
+		t.Execute(w, "")
 	}
+
 }
 
 func getPosts() []Post {
 	posts := []Post{}
+	postDir, err := filepath.Abs("posts")
+	printErr(err)
 
-	files, err := filepath.Glob("posts/*.md")
-	if err != nil {
-		log.Fatal(err)
-	}
+	files, err := ioutil.ReadDir(postDir)
+	printErr(err)
 
 	for _, f := range files {
-		// get the filename without dir and ext .md
-		file := strings.Replace(f, "posts/", "", -1)
-		file = strings.Replace(file, ".md", "", -1)
+		filename := f.Name()
+		// remove .md extension to be used
+		trimmedFilename := strings.TrimSuffix(filename, ".md")
+		if isMarkdown(filename) {
+			content, fm, err := parseContent(path.Join(postDir, filename))
+			printErr(err)
 
-		content, fm := parseContent(f)
-		body := string(blackfriday.MarkdownCommon([]byte(content)))
+			body := string(blackfriday.MarkdownCommon([]byte(content)))
 
-		posts = append(posts, Post{*fm, body, file})
+			posts = append(posts, Post{*fm, body, trimmedFilename})
+		}
+
 	}
 
 	return posts
 }
 
-func getPost(p string) Post {
-	post := Post{}
+func getPost(p string) (*Post, error) {
+
+	// TO DO check for only listed post to serve
+	// VALIDATE
 	f := "posts/" + p + ".md"
 
-	content, fm := parseContent(f)
+	content, fm, err := parseContent(f)
+	if err != nil {
+		return nil, err
+	}
+
 	body := string(blackfriday.MarkdownCommon([]byte(content)))
 
-	post = Post{*fm, body, p}
+	post := &Post{*fm, body, p}
 
-	return post
+	return post, nil
+}
+
+func isMarkdown(f string) bool {
+	if !strings.HasSuffix(f, ".md") {
+		return false
+	}
+	return true
+}
+
+func printErr(err error) {
+	if err != nil {
+		fmt.Println(err)
+	}
 }
