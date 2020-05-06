@@ -103,7 +103,7 @@ func getPosts() []Post {
 
 			body := string(blackfriday.MarkdownCommon([]byte(content)))
 
-			posts = append(posts, Post{*fm, body, trimmedFilename})
+			posts = append(posts, Post{*fm, body[:200], trimmedFilename})
 		}
 
 	}
